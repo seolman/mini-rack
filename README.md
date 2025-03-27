@@ -4,7 +4,7 @@ I've planned to build 10 inch mini rack for my home lab.
 [This video](https://www.youtube.com/watch?v=y1GCIwLm3is) was the inspiration.
 
 ![19 inch and 10 inch rack difference](https://upload.wikimedia.org/wikipedia/commons/8/87/19_inch_vs_10_inch_correct_rack_dimensions.svg)
-![mockup](./assets/mini_rack.excalidraw.png)
+![mockup](./image/mini_rack.excalidraw.png)
 
 ## Hardware
 
