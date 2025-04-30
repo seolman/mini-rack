@@ -30,3 +30,17 @@ poe splitter        15000
 
 ## Software
 
+duckdns: DDNS(Dynamic Domain Name Server) service that give free sub domain `duckdns.org`
+
+### proxmox
+protainer
+openmediavault
+plex or jellyfin
+excalidraw
+home assistant
+pi-hole
+
+### pi cluster
+k3s
+
+

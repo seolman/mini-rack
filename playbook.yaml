@@ -1,0 +1,56 @@
+---
+- name: update and upgrade
+  hosts: k3s
+  become: true
+  tasks:
+    - name: "apt"
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+        autoclean: yes
+        autoremove: yes
+
+- name: before install k3s
+  hosts: k3s
+  become: true
+  tasks:
+    - name: check cmdline
+      stat:
+        path: /boot/firmware/cmdline.txt
+      register: cmdline_exist
+    - name: required
+      ansible.builtin.replace:
+        path: /boot/firmware/cmdline.txt
+        regexp: '^([\w](?!.*\b{{ cgroup_item }}\b).*)$'
+        replace: '\1 {{ cgroup_item }}'
+      with_items:
+        - "cgroup_memory=1"
+        - "cgroup_enable=memory"
+      loop_control:
+        loop_var: cgroup_item
+      when: cmdline_exist.stat.exists
+      notify: reboot pi
+  handlers:
+    - name: reboot pi
+      ansible.builtin.reboot:
+        msg: "reboot after cmdline"
+        reboot_timeout: 60
+
+- name: ip config
+  hosts: k3s
+  tasks:
+  - name: Enable IPv4 forwarding
+    ansible.posix.sysctl:
+      name: net.ipv4.ip_forward
+      value: "1"
+      state: present
+      reload: true
+
+  - name: Enable IPv6 forwarding
+    ansible.posix.sysctl:
+      name: net.ipv6.conf.all.forwarding
+      value: "1"
+      state: present
+      reload: true
+    when: ansible_all_ipv6_addresses | length > 0
+

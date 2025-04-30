@@ -1,0 +1,16 @@
+---
+k3s:
+  children:
+    master:
+      hosts:
+        pi1:
+          ansible_host: 192.168.8.101
+    worker:
+      hosts:
+        pi2:
+          ansible_host: 192.168.8.102
+        pi3:
+          ansible_host: 192.168.8.103
+  vars:
+    ansible_user: seolman
+    ansible_passworkd: seol224
