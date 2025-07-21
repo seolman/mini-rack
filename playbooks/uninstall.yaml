@@ -1,5 +1,5 @@
 ---
-- name: Uninstall master
+- name: Uninstall master node
   hosts: master
   become: true
   tasks:
@@ -19,8 +19,13 @@
       ansible.builtin.file:
         path: ~{{ ansible_user }}/.kube/config
         state: absent
+    - name: Remove K3s commands from ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: "~{{ ansible_user }}/.bashrc"
+        search_string: "Added by k3s-ansible"
+        state: absent
 
-- name: Uninstall master
+- name: Uninstall worker node
   hosts: worker
   become: true
   tasks:
@@ -32,5 +37,3 @@
       ansible.builtin.file:
         path: /usr/local/bin/k3s-install.sh
         state: absent
-
-

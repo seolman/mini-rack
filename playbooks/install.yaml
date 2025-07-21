@@ -12,7 +12,7 @@
   roles:
     - role: master_node
 
-- name: Setup master node
+- name: Setup worker node
   hosts: worker
   become: true
   roles:

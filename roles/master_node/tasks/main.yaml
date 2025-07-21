@@ -17,27 +17,53 @@
         group: root
         mode: "0755"
 
-    - name: Download k3s binary
+    - name: Initialize the first k3s master
+      when: inventory_hostname == groups['master'][0]
       ansible.builtin.command:
         cmd: /usr/local/bin/k3s-install.sh
       environment:
-        # INSTALL_K3S_VERSION: "{{ k3s_version }}"
-        INSTALL_K3S_EXEC: "server"
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        INSTALL_K3S_EXEC: "server --cluster-init"
         K3S_TOKEN: "{{ k3s_token }}"
       changed_when: true
 
-- name: Copy config file to user home directory
-  ansible.builtin.copy:
-    src: /etc/rancher/k3s/k3s.yaml
-    dest: ~{{ ansible_user }}/.kube/config
-    remote_src: true
-    owner: "{{ ansible_user }}"
-    mode: "u=rw,g=,o="
+    - name: Join other masters to the cluster
+      when: inventory_hostname != groups['master'][0]
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s-install.sh
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        INSTALL_K3S_EXEC: "server"
+        K3S_TOKEN: "{{ k3s_token }}"
+        K3S_URL: "https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:6443"
+      changed_when: true
 
-- name: Configure default KUBECONFIG for user
-  ansible.builtin.lineinfile:
-    path: ~{{ ansible_user }}/.bashrc
-    regexp: 'export KUBECONFIG=~/.kube/config'
-    line: 'export KUBECONFIG=~/.kube/config # Added by k3s-ansible'
-    state: present
+- name: Setup kubectl for user
+  block:
+    - name: Create directory .kube
+      ansible.builtin.file:
+        path: ~{{ ansible_user }}/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "u=rwx,g=rx,o="
 
+    - name: Copy config file to user home directory
+      ansible.builtin.copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: ~{{ ansible_user }}/.kube/config
+        remote_src: true
+        owner: "{{ ansible_user }}"
+        mode: "u=rw,g=,o="
+
+    - name: Configure default KUBECONFIG for user
+      ansible.builtin.lineinfile:
+        path: ~{{ ansible_user }}/.bashrc
+        regexp: 'export KUBECONFIG=~/.kube/config'
+        line: 'export KUBECONFIG=~/.kube/config # Added by k3s-ansible'
+        state: present
+
+    - name: Configure kubectl autocomplete
+      ansible.builtin.lineinfile:
+        path: ~{{ ansible_user }}/.bashrc
+        regexp: '\.\s+<\(kubectl completion bash\)'
+        line: ". <(kubectl completion bash)  # Added by k3s-ansible"
