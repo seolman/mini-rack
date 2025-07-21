@@ -1,0 +1,30 @@
+---
+- name: Check if the host is a Raspberry Pi
+  ansible.builtin.command: grep "Raspberry Pi" /proc/cpuinfo
+  register: is_raspberry_pi_check
+  changed_when: false
+  failed_when: false
+
+- name: Set fact for Raspberry Pi detection
+  ansible.builtin.set_fact:
+    is_raspberry_pi: "{{ is_raspberry_pi_check.rc == 0 }}"
+  changed_when: false
+
+- name: Check cmdline
+  ansible.builtin.stat:
+    path: /boot/firmware/cmdline.txt
+  register: cmdline_exist
+  when: is_raspberry_pi
+
+- name: Replace cmdline.txt
+  ansible.builtin.replace:
+    path: /boot/firmware/cmdline.txt
+    regexp: '^([\w](?!.*\b{{ cgroup_item }}\b).*)$'
+    replace: '\1 {{ cgroup_item }}'
+  with_items:
+    - "cgroup_memory=1"
+    - "cgroup_enable=memory"
+  loop_control:
+    loop_var: cgroup_item
+  when: cmdline_exist.stat.exists and is_raspberry_pi
+  notify: Reboot pi

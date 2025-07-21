@@ -1,0 +1,19 @@
+---
+- name: Requirements
+  hosts: k3s
+  become: true
+  roles:
+    - role: prereq
+    - role: raspberrypi
+
+- name: Setup master node
+  hosts: master
+  become: true
+  roles:
+    - role: master_node
+
+- name: Setup master node
+  hosts: worker
+  become: true
+  roles:
+    - role: worker_node

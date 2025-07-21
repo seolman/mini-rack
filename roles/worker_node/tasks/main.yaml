@@ -1,0 +1,28 @@
+---
+- name: Get k3s installed version
+  ansible.builtin.command: k3s --version
+  register: k3s_version_output
+  changed_when: false
+  ignore_errors: true
+
+- name: Download k3s
+  when: k3s_version_output.rc != 0
+  block:
+    - name: Download install script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io/
+        timeout: 120
+        dest: /usr/local/bin/k3s-install.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Download k3s binary
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s-install.sh
+      environment:
+        # INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        INSTALL_K3S_EXEC: "agent"
+        K3S_TOKEN: "{{ k3s_token }}"
+        K3S_URL: "https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:6443"
+      changed_when: true
