@@ -1,0 +1,31 @@
+k3s:
+    children:
+        master:
+            hosts:
+                pi1:
+                    ansible_host: ENC[AES256_GCM,data:w1lVHXOgeignYjm2Lg==,iv:tWfkpkLSNr9m7AJzmFTXe9RTafh5d5oGyhO42uVJyVo=,tag:6M/8G8niJ0EmfjbxseX7yA==,type:str]
+        worker:
+            hosts:
+                pi2:
+                    ansible_host: ENC[AES256_GCM,data:L4MyTJWlwsyI+VK9/Q==,iv:VO1/Soa5geJwAIttyEjhbJ36CXgBwy3htc+xZ9TcGyQ=,tag:qbGdL5IbphWV20s8YFpcrQ==,type:str]
+                pi3:
+                    ansible_host: ENC[AES256_GCM,data:SNSi99dyIbsGCBdgEw==,iv:XYlkX43stN4ormWraWJtMF2DFaIcsymZnHQxdAXG+SM=,tag:vy7dV0caBxWofKt+2gH8jw==,type:str]
+    vars:
+        ansible_user: ENC[AES256_GCM,data:FOmaowufyQ==,iv:hdsQJM9ApGc5PhYCjTE2p3rpM+NwbCzMEF/kLwJpKzQ=,tag:2XjWV/7Z+M9fJvyKzuLF2w==,type:str]
+        k3s_version: ENC[AES256_GCM,data:s0ie4hCvPFxXhDGE,iv:vfzKLdtHqwvELVbVKQQYckKjjG0okq9AGdk3fdDZEdk=,tag:AHR1Zw2izD13eaj5fynqag==,type:str]
+        k3s_token: ENC[AES256_GCM,data:DBexNb/A24ts89xlFe8dlDd98+JrssMv9sWKvkLNuaMpkbcqfFSooEgbpE3uusWRJqsbW4sjMh0jFYsaBRYuQUc6mmimtv3p7CILzLH8hnwNkHcTb7gBRg==,iv:w3o0/fWslCPgLCJ6sTDL5rMRtFglKlDOOZtBDH0lWG4=,tag:JU5bWX3q8feRfOB0fC/Kqg==,type:str]
+sops:
+    age:
+        - recipient: age1fd5xyepfqgetv4705plhvcx9agdns6l27wctgp9vcvm6fl5m3easxw4nu7
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBqNWtCTktuMkhGZHJwbjc0
+            SGhKZlZuWTc4MHZFMUZzL2cvOFNYWjJyazBrCm40VE5QM2JRZFJhTDVIcGFYSXBm
+            UnVpQXorakt0Unl1V256SzdTSzdlVk0KLS0tIGtiSTkyRnRDQ1dDV0xYTTh0UkQ3
+            aFFQbGFveVg0MnpsQnFKYjlRRnh3YzQKGw4F98+MI8rmEIh8doSoskFRrR4AiHcY
+            p9uu4XGrna5fYCUXwngp6nGjksOCsVq9Y64o/g39XAFiY05VxksWPw==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2025-07-21T07:27:00Z"
+    mac: ENC[AES256_GCM,data:cj22yMSSX0ufk7d7Yg8Z0rL0UrI+uV1KtWOZCr3/rUtX4/iz1ikB9sUA27gonnrx5TNYKZKV4y/YYa8TQOvcpDHhdytffaqdYc13VNwgQ2esOSSWDnTyO8H2LWigXT5o1NwiN8FjR3ysZgXJhox8kryRUG6JFGWc23W+aVK2KQk=,iv:+Iv39Qm02LbKZewWUBmX6zIqufJq60aE8Ak6PkLWDhw=,tag:OgWbmhCAblKwnjKvnQf5rg==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.10.2
