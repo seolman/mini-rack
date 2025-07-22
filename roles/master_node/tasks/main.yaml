@@ -19,13 +19,46 @@
 
     - name: Initialize the first k3s master
       when: inventory_hostname == groups['master'][0]
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-install.sh
-      environment:
-        INSTALL_K3S_VERSION: "{{ k3s_version }}"
-        INSTALL_K3S_EXEC: "server --cluster-init"
-        K3S_TOKEN: "{{ k3s_token }}"
-      changed_when: true
+      block:
+        - name: Run install script
+          ansible.builtin.command:
+            cmd: /usr/local/bin/k3s-install.sh
+          environment:
+            INSTALL_K3S_VERSION: "{{ k3s_version }}"
+            INSTALL_K3S_EXEC: "server --cluster-init --tls-san {{ vip }} --disable servicelb"
+            K3S_TOKEN: "{{ k3s_token }}"
+          changed_when: true
+
+        - name: Make directory
+          ansible.builtin.file:
+            path: /var/lib/rancher/k3s/server/manifests
+            state: directory
+
+        - name: Download Kube-VIP RBAC manifest
+          ansible.builtin.get_url:
+            url: https://kube-vip.io/manifests/rbac.yaml
+            dest: /var/lib/rancher/k3s/server/manifests/kube-vip-rbac.yaml
+
+        - name: Pull kube-vip docker image
+          ansible.builtin.command:
+            cmd: ctr image pull docker.io/plndr/kube-vip:latest            
+          changed_when: false
+
+        - name: Generate kube-vip daemonset manifest
+          ansible.builtin.shell:
+            cmd: >
+              ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip
+              manifest daemonset
+              --interface eth0
+              --address 192.168.8.100
+              --inCluster
+              --taint
+              --controlplane
+              --services
+              --arp
+              --leaderElection
+              | tee /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
+            creates: /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
 
     - name: Join other masters to the cluster
       when: inventory_hostname != groups['master'][0]
@@ -33,9 +66,9 @@
         cmd: /usr/local/bin/k3s-install.sh
       environment:
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
-        INSTALL_K3S_EXEC: "server"
+        INSTALL_K3S_EXEC: "server --disable servicelb"
         K3S_TOKEN: "{{ k3s_token }}"
-        K3S_URL: "https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:6443"
+        K3S_URL: "https://{{ vip }}:6443"
       changed_when: true
 
 - name: Setup kubectl for user
@@ -67,3 +100,10 @@
         path: ~{{ ansible_user }}/.bashrc
         regexp: '\.\s+<\(kubectl completion bash\)'
         line: ". <(kubectl completion bash)  # Added by k3s-ansible"
+
+    - name: Add kube-vip alias
+      ansible.builtin.lineinfile:
+        path: "~{{ ansible_user }}/.bashrc"
+        regexp: 'alias kube-vip='
+        line: 'alias kube-vip="sudo ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip"  # Added by k3s-ansible'
+        state: present
