@@ -25,7 +25,7 @@
             cmd: /usr/local/bin/k3s-install.sh
           environment:
             INSTALL_K3S_VERSION: "{{ k3s_version }}"
-            INSTALL_K3S_EXEC: "server --cluster-init --tls-san {{ vip }} --disable servicelb"
+            INSTALL_K3S_EXEC: "server --cluster-init --tls-san {{ vip }} --disable servicelb --node-ip {{ hostvars[groups['master'][0]]['ansible_host'] }}"
             K3S_TOKEN: "{{ k3s_token }}"
           changed_when: true
 
@@ -49,8 +49,8 @@
             cmd: >
               ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip
               manifest daemonset
-              --interface eth0
-              --address 192.168.8.100
+              --interface {{ vip_interface | default('eth0') }}
+              --address {{ vip }}
               --inCluster
               --taint
               --controlplane
@@ -66,7 +66,7 @@
         cmd: /usr/local/bin/k3s-install.sh
       environment:
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
-        INSTALL_K3S_EXEC: "server --disable servicelb"
+        INSTALL_K3S_EXEC: "server --disable servicelb --node-ip {{ ansible_host }}"
         K3S_TOKEN: "{{ k3s_token }}"
         K3S_URL: "https://{{ vip }}:6443"
       changed_when: true

@@ -5,3 +5,7 @@
     upgrade: dist
     autoclean: yes
     autoremove: yes
+
+- name: Install iptables
+  ansible.builtin.apt:
+    name: iptables
