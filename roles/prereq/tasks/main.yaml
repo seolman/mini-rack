@@ -8,4 +8,6 @@
 
 - name: Install iptables
   ansible.builtin.apt:
-    name: iptables
+    pkg:
+      - iptables
+      - open-iscsi

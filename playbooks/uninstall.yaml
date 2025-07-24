@@ -41,3 +41,12 @@
       ansible.builtin.file:
         path: /usr/local/bin/k3s-install.sh
         state: absent
+
+- name: After uninstall
+  hosts: k3s
+  become: true
+  tasks:
+    - name: Reboot
+      ansible.builtin.reboot:
+        post_reboot_delay: 10
+        reboot_timeout: 60
